@@ -1,0 +1,59 @@
+{
+  "name": "mark-editor",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "A quiet Markdown editor",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/electron.mjs",
+    "test": "vitest run",
+    "package": "npm run build && install-electron --no && electron-builder --mac dir",
+    "start": "electron .",
+    "test:desktop": "npm run build && node scripts/smoke.mjs && node scripts/rich-smoke.mjs"
+  },
+  "build": {
+    "appId": "com.mark.editor",
+    "productName": "Mark",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "identity": null,
+      "target": "dir"
+    },
+    "electronDist": "node_modules/electron/dist",
+    "npmRebuild": false
+  },
+  "dependencies": {
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-markdown": "^6.3.3",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.5",
+    "@lezer/markdown": "^1.4.3",
+    "dompurify": "^3.4.16",
+    "katex": "^0.18.9",
+    "markdown-it": "^15.0.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/katex": "^0.16.8",
+    "@types/markdown-it": "^14.2.0",
+    "@types/node": "^24.0.0",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.0",
+    "vitest": "^5.0.1"
+  }
+}
