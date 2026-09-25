@@ -1,6 +1,6 @@
 {
   "name": "mark-editor",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "A quiet Markdown editor",
@@ -11,7 +11,8 @@
     "test": "vitest run",
     "package": "npm run build && install-electron --no && electron-builder --mac dir",
     "start": "electron .",
-    "test:desktop": "npm run build && node scripts/smoke.mjs && node scripts/rich-smoke.mjs"
+    "test:desktop": "npm run build && node scripts/smoke.mjs && node scripts/rich-smoke.mjs && node scripts/features-smoke.mjs",
+    "icons": "node scripts/icons.mjs"
   },
   "build": {
     "appId": "com.mark.editor",
@@ -27,7 +28,8 @@
     "mac": {
       "category": "public.app-category.productivity",
       "identity": null,
-      "target": "dir"
+      "target": "dir",
+      "icon": "build/icons/mark.icns"
     },
     "electronDist": "node_modules/electron/dist",
     "npmRebuild": false
@@ -38,10 +40,14 @@
     "@codemirror/language": "^6.11.0",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.36.5",
+    "@lezer/common": "^1.5.2",
+    "@lezer/highlight": "^1.2.4",
     "@lezer/markdown": "^1.4.3",
     "dompurify": "^3.4.16",
     "katex": "^0.18.9",
-    "markdown-it": "^15.0.2"
+    "markdown-it": "^15.0.2",
+    "parse5": "^8.0.1",
+    "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

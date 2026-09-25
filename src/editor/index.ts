@@ -3,10 +3,12 @@ import { EditorView, keymap, drawSelection, highlightActiveLine, type Command } 
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
 import { markdown, markdownKeymap } from '@codemirror/lang-markdown';
 import { Strikethrough } from '@lezer/markdown';
-import { syntaxHighlighting, defaultHighlightStyle, bracketMatching } from '@codemirror/language';
+import { syntaxHighlighting, HighlightStyle, bracketMatching } from '@codemirror/language';
+import { tags } from '@lezer/highlight';
+const sourceHighlight=HighlightStyle.define([{tag:[tags.heading,tags.strong],color:'var(--heading)',fontWeight:'bold'},{tag:[tags.keyword,tags.link,tags.url],color:'var(--accent)'},{tag:[tags.monospace,tags.string],color:'var(--code-text)'},{tag:[tags.comment,tags.meta],color:'var(--muted)'},{tag:tags.emphasis,fontStyle:'italic'},{tag:tags.strikethrough,textDecoration:'line-through'}]);
 import { livePreview } from './preview';
 import { mathSyntax } from './math';
-import { richPreview, compositionEffect } from './rich';
+import { richPreview, compositionEffect, assetEffect, assetState } from './rich';
 import { insertBreak } from './breaks';
 import 'katex/dist/katex.min.css';
 export const wrapSelection=(marker:string):Command=>view=>{
@@ -22,9 +24,9 @@ export function createEditor(parent:HTMLElement, onChange:(text:string)=>void, o
  const mode=new Compartment(),editable=new Compartment();
  let source=false;
  const extensions=()=>[
-  markdown({extensions:[Strikethrough,mathSyntax],addKeymap:false}),history(),drawSelection(),bracketMatching(),EditorView.lineWrapping,
+  assetState,markdown({extensions:[Strikethrough,mathSyntax],addKeymap:false}),history(),drawSelection(),bracketMatching(),EditorView.lineWrapping,
   keymap.of([{key:'Enter',run:view=>insertBreak(false,source)(view)},{key:'Shift-Enter',run:view=>insertBreak(true,source)(view)},{key:'Mod-b',run:wrapSelection('**')},{key:'Mod-i',run:wrapSelection('*')},...markdownKeymap,...defaultKeymap,...historyKeymap,indentWithTab]),
-  mode.of(source?[syntaxHighlighting(defaultHighlightStyle),highlightActiveLine()]:[richPreview,livePreview]),editable.of([EditorView.editable.of(true),EditorState.readOnly.of(false)]),
+  mode.of(source?[syntaxHighlighting(sourceHighlight),highlightActiveLine()]:[richPreview,livePreview]),editable.of([EditorView.editable.of(true),EditorState.readOnly.of(false)]),
   EditorView.contentAttributes.of({'aria-label':'Markdown 编辑区',spellcheck:'false'}),
   EditorView.updateListener.of(update=>{if(update.docChanged)onChange(update.state.doc.toString());if(update.docChanged||update.selectionSet){const pos=update.state.selection.main.head,l=update.state.doc.lineAt(pos);onCursor(l.number,pos-l.from+1)}}),
   EditorView.domEventHandlers({
@@ -36,7 +38,8 @@ export function createEditor(parent:HTMLElement, onChange:(text:string)=>void, o
  const view=new EditorView({parent,state:EditorState.create({doc:'',extensions:extensions()})});
  return {
   view,
-  toggleSource(){source=!source;view.dispatch({effects:mode.reconfigure(source?[syntaxHighlighting(defaultHighlightStyle),highlightActiveLine()]:[richPreview,livePreview])});view.dom.classList.toggle('source-mode',source);return source},
+  setImages(sources:Record<string,string>){view.dispatch({effects:assetEffect.of(sources)})},
+  toggleSource(){source=!source;view.dispatch({effects:mode.reconfigure(source?[syntaxHighlighting(sourceHighlight),highlightActiveLine()]:[richPreview,livePreview])});view.dom.classList.toggle('source-mode',source);return source},
   load(text:string){view.setState(EditorState.create({doc:text,extensions:extensions()}));view.focus()},
   setBusy(busy:boolean){view.dispatch({effects:editable.reconfigure([EditorView.editable.of(!busy),EditorState.readOnly.of(busy)])})}
  };
